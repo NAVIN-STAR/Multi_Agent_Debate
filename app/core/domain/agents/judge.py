@@ -4,8 +4,11 @@ from app.core.domain.utils.prompt_renderer import render_template
 
 
 class Judge(Agent):
-    def build_prompt(self,context:TurnContext) -> str:
-        return render_template("judge_prompt.j2",context=context)
-        
 
-        
+
+    @property
+    def name(self)->str:
+        return "judge"
+
+    def build_prompt(self,turn_context:TurnContext) -> str:
+        return render_template("judge_prompt.j2",context=turn_context)

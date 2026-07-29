@@ -10,15 +10,20 @@ class Agent(ABC):
         super().__init__()
 
 
-    async def take_turn(self,context:TurnContext):
-        prompt = self.build_prompt(context)
+    @property
+    @abstractmethod
+    def name(self) -> str:
+        ...
+
+    async def take_turn(self,turn_context:TurnContext):
+        prompt = self.build_prompt(turn_context)
         response = await self.llm.generate(prompt)
         self.validate_response(response) #Needs implementation
         return self.parse_response(response)# Needs Implementation
 
 
     @abstractmethod
-    def build_prompt(self,context:TurnContext) -> str:
+    def build_prompt(self,turn_context:TurnContext) -> str:
         ...
     
 

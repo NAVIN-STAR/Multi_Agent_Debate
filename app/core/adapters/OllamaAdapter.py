@@ -1,5 +1,6 @@
-from app.core.domain.ports.llm_port import LLMPort
 from ollama import AsyncClient
+
+from app.core.domain.ports.llm_port import LLMPort
 
 
 class OllamaAdapter(LLMPort):
