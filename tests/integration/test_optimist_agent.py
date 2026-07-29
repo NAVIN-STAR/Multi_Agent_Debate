@@ -1,7 +1,9 @@
 import pytest
+
 from app.core.adapters.OllamaAdapter import OllamaAdapter
 from app.core.domain.agents.optimist import Optimist
 from app.core.domain.models.turn_context import TurnContext
+
 
 @pytest.mark.asyncio
 async def test_optimist_take_turn_integration():

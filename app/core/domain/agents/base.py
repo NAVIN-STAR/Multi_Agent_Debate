@@ -1,8 +1,8 @@
-from abc import ABC,abstractmethod
-from app.core.domain.ports.llm_port import LLMPort
+from abc import ABC, abstractmethod
+
 from app.core.domain.models.turn_context import TurnContext
-from pathlib import Path
-from jinja2 import Environment, FileSystemLoader
+from app.core.domain.ports.llm_port import LLMPort
+
 
 class Agent(ABC):
     def __init__(self,llm:LLMPort) -> None:
