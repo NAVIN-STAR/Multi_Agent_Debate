@@ -1,6 +1,5 @@
 from app.core.domain.agents.base import Agent
 from app.core.domain.models.turn_context import TurnContext
-from app.core.domain.ports.llm_port import LLMPort
 from app.core.domain.utils.prompt_renderer import render_template
 
 
