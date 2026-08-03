@@ -5,6 +5,7 @@ from app.core.application.workflows.debate.Nodes import (
     JudgeNode,
     OptimistNode,
 )
+from app.core.application.workflows.debate.graph import DebateGraph
 from app.core.domain.agents.critic import Critic
 from app.core.domain.agents.judge import Judge
 from app.core.domain.agents.optimist import Optimist
@@ -68,3 +69,16 @@ def judge_agent(fake_llm):
 @pytest.fixture
 def judge_node(judge_agent):
     return JudgeNode(judge_agent)
+
+#----------------------------------------------------------#
+
+
+##DebateGraph
+
+@pytest.fixture
+def debate_graph(optimist_node,critic_node,judge_node):
+    return DebateGraph(optimist_node= optimist_node,
+        critic_node=critic_node,
+        judge_node= judge_node,).build()
+
+
