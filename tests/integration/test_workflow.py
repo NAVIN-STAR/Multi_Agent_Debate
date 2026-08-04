@@ -3,6 +3,13 @@ import pytest
 from app.core.application.workflows.debate.workflow import DebateWorkflow
 from app.core.domain.models.turn_context import DebateRequest
 
+expected_speakers = [
+    "optimist",
+    "critic",
+    "optimist",
+    "critic",
+    "judge",
+]
 @pytest.mark.asyncio
 async def test_workflow_integration(fake_llm):
     workflow = DebateWorkflow(fake_llm)
@@ -16,11 +23,7 @@ async def test_workflow_integration(fake_llm):
     assert len(response.history) == 5
 
 
-    assert response.history[0].speaker == "optimist"
-    assert response.history[1].speaker == "critic"
-    assert response.history[2].speaker == "optimist"
-    assert response.history[3].speaker == "critic"
-    assert response.history[4].speaker == "judge"
+    assert [message.speaker for message in response.history] == expected_speakers
 
 
     for message in response.history:
