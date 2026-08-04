@@ -21,10 +21,24 @@ class Speaker(Enum):
     OPTIMIST = "optimist"
     CRITIC = "critic"
     JUDGE = "judge"
+
 #Memory state for Langraph nodes to decide which node to invoke next
 class DebateState(TypedDict):
     turn_context: TurnContext
     current_speaker: Speaker
     verdict: str | None
     max_rounds:int
+
+
+#Input Request class for apis 
+@dataclass
+class DebateRequest:
+    topic: str
+    max_rounds: int = 2
+
+@dataclass
+class DebateResponse:
+    topic:str
+    history:list[DebateMessage]
+    verdict:str|None
     
