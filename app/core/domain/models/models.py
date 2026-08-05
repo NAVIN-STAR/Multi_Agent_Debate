@@ -6,7 +6,7 @@ from typing import TypedDict
 #Holds current turn of a speaker and its response
 @dataclass
 class DebateMessage:
-    speaker: str
+    speaker: Speaker
     content: str
 
 #Context known to each agent
@@ -31,14 +31,5 @@ class DebateState(TypedDict):
 
 
 #Input Request class for apis 
-@dataclass
-class DebateRequest:
-    topic: str
-    max_rounds: int = 2
 
-@dataclass
-class DebateResponse:
-    topic:str
-    history:list[DebateMessage]
-    verdict:str|None
     

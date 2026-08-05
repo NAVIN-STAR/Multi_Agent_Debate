@@ -9,7 +9,7 @@ from app.core.application.workflows.debate.Nodes import (
     OptimistNode,
 )
 from app.core.application.workflows.debate.routing import route
-from app.core.domain.models.turn_context import DebateState, Speaker
+from app.core.domain.models.models import DebateState, Speaker
 
 ROUTING_MAP: dict[Hashable, str] = {
     Speaker.OPTIMIST: "optimist",

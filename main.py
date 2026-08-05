@@ -1,8 +1,8 @@
 import asyncio
 
 from app.core.adapters.GroqAdapter import GroqAdapter
+from app.core.application.dto.debate_models import DebateRequest
 from app.core.application.workflows.debate.workflow import DebateWorkflow
-from app.core.domain.models.turn_context import DebateRequest
 
 
 async def main() -> None:

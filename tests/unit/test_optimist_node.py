@@ -1,6 +1,6 @@
 import pytest
 
-from app.core.domain.models.turn_context import Speaker
+from app.core.domain.models.models import Speaker
 
 
 @pytest.mark.asyncio

@@ -1,5 +1,5 @@
 from app.core.application.workflows.debate.base_node import BaseNode
-from app.core.domain.models.turn_context import DebateState, Speaker, TurnContext
+from app.core.domain.models.models import DebateState, Speaker, TurnContext
 
 
 class OptimistNode(BaseNode):

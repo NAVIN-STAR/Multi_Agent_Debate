@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 from app.core.domain.agents.base import Agent
-from app.core.domain.models.turn_context import DebateMessage, DebateState, TurnContext
+from app.core.domain.models.models import DebateMessage, DebateState, TurnContext
 
 
 class BaseNode(ABC):

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from app.core.domain.models.turn_context import TurnContext
+from app.core.domain.models.models import Speaker, TurnContext
 from app.core.domain.ports.llm_port import LLMPort
 
 
@@ -12,7 +12,7 @@ class Agent(ABC):
 
     @property
     @abstractmethod
-    def name(self) -> str:
+    def name(self) -> Speaker:
         ...
 
     async def take_turn(self,turn_context:TurnContext):

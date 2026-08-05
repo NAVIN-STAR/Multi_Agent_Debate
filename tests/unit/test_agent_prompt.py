@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 from app.core.domain.agents.critic import Critic
 from app.core.domain.agents.judge import Judge
 from app.core.domain.agents.optimist import Optimist
-from app.core.domain.models.turn_context import TurnContext
+from app.core.domain.models.models import TurnContext
 from app.core.domain.ports.llm_port import LLMPort
 
 

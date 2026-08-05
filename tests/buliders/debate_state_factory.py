@@ -1,4 +1,4 @@
-from app.core.domain.models.turn_context import (
+from app.core.domain.models.models import (
     DebateState,
     Speaker,
     TurnContext,

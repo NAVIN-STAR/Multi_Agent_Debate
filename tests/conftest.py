@@ -1,15 +1,15 @@
 import pytest
 
+from app.core.application.workflows.debate.graph import DebateGraph
 from app.core.application.workflows.debate.Nodes import (
     CriticNode,
     JudgeNode,
     OptimistNode,
 )
-from app.core.application.workflows.debate.graph import DebateGraph
 from app.core.domain.agents.critic import Critic
 from app.core.domain.agents.judge import Judge
 from app.core.domain.agents.optimist import Optimist
-from app.core.domain.models.turn_context import TurnContext
+from app.core.domain.models.models import TurnContext
 from app.core.domain.ports.llm_port import LLMPort
 from tests.buliders.debate_state_factory import DebateStateFactory
 

@@ -3,7 +3,7 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
 
-from app.core.domain.models.turn_context import TurnContext
+from app.core.domain.models.models import TurnContext
 
 PROMPTS_DIR = Path(__file__).resolve().parent.parent / "prompts"
 jinja_env = Environment(loader=FileSystemLoader(PROMPTS_DIR))

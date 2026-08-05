@@ -3,7 +3,7 @@ import pytest
 from app.core.adapters.GroqAdapter import GroqAdapter
 from app.core.adapters.OllamaAdapter import OllamaAdapter
 from app.core.domain.agents.judge import Judge
-from app.core.domain.models.turn_context import TurnContext
+from app.core.domain.models.models import TurnContext
 
 
 @pytest.mark.asyncio
