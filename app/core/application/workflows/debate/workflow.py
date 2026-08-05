@@ -4,7 +4,7 @@ from langgraph.graph.state import CompiledStateGraph
 
 from app.core.application.dto.debate_event import DebateEventType
 from app.core.application.dto.debate_models import DebateRequest, DebateResponse
-from app.core.application.mappers.debate_mappers import to_event, to_started_event
+from app.core.application.mappers.debate_mappers import to_event, to_response, to_started_event
 from app.core.application.workflows.debate.graph import DebateGraph
 from app.core.application.workflows.debate.Nodes import (
     CriticNode,
@@ -62,37 +62,42 @@ class DebateWorkflow:
             "verdict": None,
         }
 
-    def _map_to_response(self, result: DebateState) -> DebateResponse:
-        return DebateResponse(
-            topic=result["turn_context"].topic,
-            history=result["turn_context"].history,
-            verdict=result["verdict"],
+
+    def _prepare_execution(
+    self,
+    request: DebateRequest,
+) -> tuple[CompiledStateGraph, DebateState]:
+        initial_state = self._create_initial_state(request)
+
+        optimist, critic, judge = self._create_agents()
+
+        optimist_node, critic_node, judge_node = self._create_nodes(
+            optimist,
+            critic,
+            judge,
         )
+
+        graph = self._create_graph(
+            optimist_node,
+            critic_node,
+            judge_node,
+        )
+
+        return graph, initial_state
+
+
 
     async def run(self, request: DebateRequest):
-        initial_state = self._create_initial_state(request)
+        graph, initial_state = self._prepare_execution(request)
 
-        optimist, critic, judge = self._create_agents()
-
-        optimist_node, critic_node, judge_node = self._create_nodes(
-            optimist,
-            critic,
-            judge,
+        result = cast(
+            DebateState,
+            await graph.ainvoke(initial_state),
         )
-        graph = self._create_graph(optimist_node, critic_node, judge_node)
-        result = cast(DebateState, await graph.ainvoke(initial_state))
-        return self._map_to_response(result=result)
+        return to_response(result)
 
     async def stream(self, request: DebateRequest):
-        initial_state = self._create_initial_state(request)
-        optimist, critic, judge = self._create_agents()
-
-        optimist_node, critic_node, judge_node = self._create_nodes(
-            optimist,
-            critic,
-            judge,
-        )
-        graph = self._create_graph(optimist_node, critic_node, judge_node)
+        graph, initial_state = self._prepare_execution(request)
 
         # 1. Optimist is about to think
         yield to_started_event(initial_state)

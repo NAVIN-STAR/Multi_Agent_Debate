@@ -13,7 +13,7 @@ async def test_optimist_node(optimist_node,initial_state_factory):
     result = await optimist_node.execute(state)
 
     assert len(result["turn_context"].history) == 1
-    assert result["turn_context"].history[0].speaker == "optimist"
+    assert result["turn_context"].history[0].speaker == Speaker.OPTIMIST
     assert result["turn_context"].history[0].content == "fake response"
     assert result["turn_context"].round_number == 1
     assert result['current_speaker']==Speaker.CRITIC
