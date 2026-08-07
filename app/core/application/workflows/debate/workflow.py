@@ -4,9 +4,13 @@ from langgraph.graph.state import CompiledStateGraph
 
 from app.core.application.dto.debate_event import DebateEventType
 from app.core.application.dto.debate_models import DebateRequest, DebateResponse
-from app.core.application.mappers.debate_mappers import to_event, to_response, to_started_event
+from app.core.application.mappers.debate_mappers import (
+    to_event,
+    to_response,
+    to_started_event,
+)
 from app.core.application.workflows.debate.graph import DebateGraph
-from app.core.application.workflows.debate.Nodes import (
+from app.core.application.workflows.debate.nodes import (
     CriticNode,
     JudgeNode,
     OptimistNode,
@@ -23,9 +27,17 @@ from app.core.domain.ports.llm_port import LLMPort
 
 
 class DebateWorkflow:
+
+
+    """Coordinates the execution of a multi-agent debate workflow.
+
+        The workflow creates the debate agents, wires them into the graph,
+        runs the debate, and returns or streams the resulting events.
+        """
+
+    
     def __init__(self, llm: LLMPort, max_rounds: int = 2) -> None:
         self.llm = llm
-        self.max_rounds = max_rounds
 
     # Responsible for creating agents
     def _create_agents(self) -> tuple[Optimist, Critic, Judge]:

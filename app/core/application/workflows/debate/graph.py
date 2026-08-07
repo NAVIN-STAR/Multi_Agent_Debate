@@ -3,7 +3,7 @@ from collections.abc import Hashable
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 
-from app.core.application.workflows.debate.Nodes import (
+from app.core.application.workflows.debate.nodes import (
     CriticNode,
     JudgeNode,
     OptimistNode,
@@ -19,6 +19,9 @@ ROUTING_MAP: dict[Hashable, str] = {
 
 
 class DebateGraph:
+
+    """Builds and compiles the debate workflow graph."""
+
     def __init__(
         self,
         optimist_node: OptimistNode,

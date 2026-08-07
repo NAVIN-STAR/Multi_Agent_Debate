@@ -9,6 +9,8 @@ load_dotenv()
 
 
 class GroqAdapter(LLMPort):
+    """Adapter for generating text through the Groq API."""
+
     def __init__(
         self,
         api_key: str | None = None,
