@@ -19,7 +19,7 @@ class GroqAdapter(LLMPort):
     ) -> None:
         # Falls back to .env values if parameters aren't explicitly passed
         self.api_key = api_key or os.getenv("GROQ_API_KEY")
-        self.model = model or os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+        self.model = model or os.getenv("GROQ_MODEL",'qwen/qwen3.6-27b')
         self.base_url = base_url or os.getenv("GROQ_BASE_URL")
 
         if not self.api_key:
