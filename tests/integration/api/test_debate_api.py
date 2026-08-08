@@ -63,3 +63,47 @@ def test_debate_requires_topic(fake_llm):
 
     assert response.status_code == 422
     app.dependency_overrides.clear()
+
+
+def test_debate_rejects_empty_topic(fake_llm):
+    app.dependency_overrides[get_workflow] = (lambda: DebateWorkflow(fake_llm))
+    client = TestClient(app)
+    response = client.post(
+        "/debates",
+        json={
+            "topic": "",
+            "max_rounds": 2,
+        },
+    )
+
+    assert response.status_code == 422
+    app.dependency_overrides.clear()
+
+def test_debate_rejects_blank_topic(fake_llm):
+    app.dependency_overrides[get_workflow] = (lambda: DebateWorkflow(fake_llm))
+    client = TestClient(app)
+    response = client.post(
+        "/debates",
+        json={
+            "topic": "   ",
+            "max_rounds": 2,
+        },
+    )
+
+    assert response.status_code == 422
+    app.dependency_overrides.clear()
+
+
+def test_debate_rejects_invalid_rounds(fake_llm):
+    app.dependency_overrides[get_workflow] = (lambda: DebateWorkflow(fake_llm))
+    client = TestClient(app)
+    response = client.post(
+        "/debates",
+        json={
+            "topic": "Science is good.",
+            "max_rounds": 0,
+        },
+    )
+
+    assert response.status_code == 422
+    app.dependency_overrides.clear()
