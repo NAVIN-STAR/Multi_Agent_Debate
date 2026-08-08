@@ -1,5 +1,7 @@
+from app.core.application.dto.debate_event import DebateEvent
 from app.core.application.dto.debate_models import DebateRequest, DebateResponse
 from app.presentation.api.schemas.debate_schemas import (
+    DebateEventSchema,
     DebateMessageSchema,
     DebateRequestSchema,
     DebateResponseSchema,
@@ -22,8 +24,6 @@ def workflow_response_to_api_response(
     )
 
 
-
-
 def api_request_to_workflow_request(
     request: DebateRequestSchema,
 ) -> DebateRequest:
@@ -31,3 +31,15 @@ def api_request_to_workflow_request(
         topic=request.topic,
         max_rounds=request.max_rounds,
     )
+
+def workflow_event_to_api_event(
+        event: DebateEvent
+)->DebateEventSchema:
+
+    return DebateEventSchema(
+        round_number=event.round_number,
+            speaker=event.speaker.value,
+            content=event.content,
+            event_type=event.event_type.value
+    )
+    

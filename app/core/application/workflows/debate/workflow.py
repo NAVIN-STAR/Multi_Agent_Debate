@@ -3,7 +3,7 @@ from typing import cast
 from langgraph.graph.state import CompiledStateGraph
 
 from app.core.application.dto.debate_event import DebateEventType
-from app.core.application.dto.debate_models import DebateRequest, DebateResponse
+from app.core.application.dto.debate_models import DebateRequest
 from app.core.application.mappers.debate_mappers import (
     to_event,
     to_response,

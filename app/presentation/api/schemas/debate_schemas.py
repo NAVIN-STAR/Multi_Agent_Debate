@@ -13,3 +13,9 @@ class DebateResponseSchema(BaseModel):
     topic:str
     history:list[DebateMessageSchema]
     verdict:str|None
+
+class DebateEventSchema(BaseModel):
+    round_number: int
+    speaker: str
+    content: str
+    event_type:str

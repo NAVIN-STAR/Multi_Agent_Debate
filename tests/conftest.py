@@ -1,7 +1,7 @@
 import pytest
 
 from app.core.application.workflows.debate.graph import DebateGraph
-from app.core.application.workflows.debate.Nodes import (
+from app.core.application.workflows.debate.nodes import (
     CriticNode,
     JudgeNode,
     OptimistNode,

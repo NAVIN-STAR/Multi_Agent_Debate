@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from app.core.domain.models.models import DebateMessage, Speaker
+from app.core.domain.models.models import DebateMessage
 
 
 @dataclass
