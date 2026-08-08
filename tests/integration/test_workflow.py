@@ -24,6 +24,6 @@ async def test_workflow_integration(fake_llm):
     assert response.verdict == "fake response"
     assert len(response.history) == 5
 
-    assert [message.speaker for message in response.history] == expected_speakers
+    assert [message.speaker.value for message in response.history] == expected_speakers
 
     assert all(message.content == "fake response" for message in response.history)

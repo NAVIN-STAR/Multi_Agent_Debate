@@ -27,6 +27,7 @@ This project is built to show how a multi-agent debate system can be architected
 - **Domain isolation** using ports and adapters
 - **Reusable debating agents** for Optimist, Critic, and Judge roles
 - **Testable core behavior** without a live LLM
+- **Interactive UI & APIs** supporting real-time streaming updates
 
 ---
 
@@ -35,22 +36,33 @@ This project is built to show how a multi-agent debate system can be architected
 The application uses **Hexagonal Architecture** to separate core domain logic from external integrations.
 
 ```
-                  ┌──────────────────────────────┐
-                  │            ADAPTERS          │
-                  │   (Ollama, Groq, Storage)    │
-                  └──────────────┬───────────────┘
-                                 │ (Implements)
-                                 ▼
-                  ┌──────────────────────────────┐
-                  │             PORTS            │
-                  │     (LLMPort, Repository)    │
-                  └──────────────┬───────────────┘
-                                 │ (Uses)
-                                 ▼
-                  ┌──────────────────────────────┐
-                  │         CORE DOMAIN          │
-                  │  (Agents, Models, Prompts)   │
-                  └──────────────────────────────┘
+       ┌────────────────────────────────────────────────────────┐
+       │                   PRESENTATION LAYER                   │
+       │           (Streamlit Web App, FastAPI Server)          │
+       └───────────────────────────┬────────────────────────────┘
+                                   │ (Invokes)
+                                   ▼
+       ┌────────────────────────────────────────────────────────┐
+       │                   APPLICATION WORKFLOW                 │
+       │             (DebateWorkflow, DebateGraph)              │
+       └───────────────────────────┬────────────────────────────┘
+                                   │ (Uses)
+                                   ▼
+       ┌────────────────────────────────────────────────────────┐
+       │                         PORTS                          │
+       │                       (LLMPort)                        │
+       └───────────────────────────▲────────────────────────────┘
+                                   │ (Implements / Plugs into)
+       ┌───────────────────────────┴────────────────────────────┐
+       │                       ADAPTERS                         │
+       │                 (Ollama, Groq Adapters)                │
+       └────────────────────────────────────────────────────────┘
+                                   │ (Uses)
+                                   ▼
+       ┌────────────────────────────────────────────────────────┐
+       │                      CORE DOMAIN                       │
+       │           (Agents, models.py, prompts, utils)          │
+       └────────────────────────────────────────────────────────┘
 ```
 
 ### Core components
@@ -60,6 +72,8 @@ The application uses **Hexagonal Architecture** to separate core domain logic fr
 - `app/core/domain/prompts`: Jinja2 prompt templates
 - `app/core/domain/utils/prompt_renderer.py`: Prompt compilation helper
 - `app/core/application/workflows/debate`: LangGraph workflow and state graph
+- `app/presentation/api`: FastAPI application structure
+- `app/ui/streamlit`: Streamlit frontend application
 
 ### Design patterns used
 
@@ -92,48 +106,84 @@ The application uses **Hexagonal Architecture** to separate core domain logic fr
 │   │   ├── adapters/          # External adapters (Ollama, Groq, etc.)
 │   │   │   ├── GroqAdapter.py
 │   │   │   └── OllamaAdapter.py
-│   │   ├── application/       # Workflow orchestration
-│   │   │   └── workflows/debate
-│   │   ├── domain/            # Core business logic
-│   │   │   ├── agents/
-│   │   │   ├── models/
-│   │   │   ├── ports/
-│   │   │   ├── prompts/
-│   │   │   └── utils/
-├── tests/                    # Unit and integration tests
-│   ├── unit/
-│   └── integration/
-├── main.py                   # Minimal application entrypoint
-├── pyproject.toml            # Dependencies and metadata
-├── uv.lock                   # Lockfile for uv package manager
-└── multi_agent_debate_PRD.md # Product requirements document
+│   │   ├── application/       # Application logic & workflow orchestration
+│   │   │   ├── dto/           # Data Transfer Objects
+│   │   │   │   ├── debate_event.py
+│   │   │   │   └── debate_models.py
+│   │   │   ├── mappers/       # Core domain mappers
+│   │   │   │   └── debate_mappers.py
+│   │   │   └── workflows/     # LangGraph workflows
+│   │   │       └── debate/
+│   │   │           ├── base_node.py
+│   │   │           ├── graph.py
+│   │   │           ├── nodes.py
+│   │   │           ├── routing.py
+│   │   │           └── workflow.py
+│   │   └── domain/            # Core business logic (isolated)
+│   │       ├── agents/        # Specialized debating agents (Optimist, Critic, Judge)
+│   │       ├── models/        # Pure domain models (models.py)
+│   │       ├── ports/         # LLM boundary interfaces (llm_port.py)
+│   │       ├── prompts/       # Jinja2 prompt templates
+│   │       └── utils/         # Prompt rendering utility
+│   ├── presentation/
+│   │   └── api/               # FastAPI REST & Streaming WebSocket API endpoints
+│   │       ├── app.py
+│   │       ├── dependencies.py
+│   │       ├── mappers/
+│   │       ├── routers/
+│   │       └── schemas/
+│   └── ui/
+│       └── streamlit/         # Streamlit web interface
+│           ├── api_client.py
+│           ├── streamlit_app.py
+│           └── components/
+├── docs/                      # Codebase architecture graphs & documentation
+│   └── codebase_graph.md
+├── tests/                    # Comprehensive Unit and Integration test suite
+│   ├── unit/                 # Node and Graph tests
+│   ├── integration/          # API, streaming, and adapter tests
+│   ├── buliders/             # Test state builders (typo in directory name)
+│   └── fakes/                # In-memory mock/fake implementations
+├── main.py                   # CLI/minimal application entrypoint
+├── pyproject.toml            # Project dependencies and configurations
+├── uv.lock                   # Package lockfile
+└── multi_agent_debate_PRD.md # Product Requirements Document
 ```
 
 ---
 
 ## 🛠️ Tech Stack
 
-- Python >= 3.14
-- LangGraph for state graph orchestration
-- Jinja2 for prompt templating
-- Ollama and Groq adapters for local LLM inference
-- Pytest and Pytest-asyncio for testing
-- `uv` as package manager
+- **Core Logic & Language**: Python >= 3.14
+- **State Orchestration**: LangGraph (for multi-agent conversation state graph)
+- **API Framework**: FastAPI (providing HTTP POST endpoints and server-sent streaming events)
+- **Frontend Client**: Streamlit (fully reactive web-based chat-like UI)
+- **Prompt Templating**: Jinja2
+- **LLM Integrations**: Groq (Llama-3.3-70b) and Ollama (local Phi-4-Mini) adapters
+- **Testing Suite**: Pytest & Pytest-asyncio
+- **Package Manager**: `uv` (fast dependency resolution and environment management)
 
 ---
 
 ## 🚀 Installation & Setup
 
 1. Install prerequisites
-   - Install [Ollama](https://ollama.com/) or another supported local model runtime
+   - Install [Ollama](https://ollama.com/) or configure your Groq credentials in `.env`
    - Install [uv](https://github.com/astral-sh/uv)
 
-2. Install dependencies
+2. Create `.env` file from configuration settings:
+   ```env
+   GROQ_API_KEY=your_api_key_here
+   GROQ_MODEL=llama-3.3-70b-versatile
+   # OLLAMA_MODEL=phi-4-mini
+   ```
+
+3. Install dependencies
    ```bash
    uv sync
    ```
 
-3. Activate the virtual environment
+4. Activate the virtual environment
    - Windows (PowerShell):
      ```powershell
      .venv\Scripts\activate
@@ -143,10 +193,21 @@ The application uses **Hexagonal Architecture** to separate core domain logic fr
      source .venv/bin/activate
      ```
 
-4. Run the app
-   ```bash
-   python main.py
-   ```
+5. Run the application
+   - **CLI (Single Command execution)**:
+     ```bash
+     python main.py
+     ```
+
+   - **FastAPI Backend (Port 8000)**:
+     ```bash
+     uvicorn app.presentation.api.app:app --host 0.0.0.0 --port 8000 --reload
+     ```
+
+   - **Streamlit Frontend (Runs UI)**:
+     ```bash
+     streamlit run app/ui/streamlit/streamlit_app.py
+     ```
 
 ---
 
@@ -171,16 +232,18 @@ The application uses **Hexagonal Architecture** to separate core domain logic fr
 
 ## 📄 Notes
 
-- `DebateWorkflow` is implemented in `app/core/application/workflows/debate/workflow.py`
-- `LLMPort` abstraction is in `app/core/domain/ports/llm_port.py`
-- Adapters are located in `app/core/adapters`
-- Prompt templates are stored in `app/core/domain/prompts`
+- Detailed architecture diagrams, LLD, class hierarchy, and state transition maps are available in [codebase_graph.md](docs/codebase_graph.md).
+- `DebateWorkflow` coordinates the execution and is located in `app/core/application/workflows/debate/workflow.py`.
+- `LLMPort` abstraction interface is in `app/core/domain/ports/llm_port.py`.
+- Adapters are located in `app/core/adapters/`.
+- Prompt templates are stored in `app/core/domain/prompts/`.
 
 ---
 
 ## 🗺️ Future Roadmap
 
-- Add persistent debate storage via a repository adapter
-- Add an interactive web UI or Streamlit frontend
-- Add structured JSON schema validation for Judge output
-- Improve turn tracking and debate-state reporting in LangGraph
+- `[x]` Add an interactive web UI / Streamlit frontend
+- `[x]` Add FastAPI support with streaming events
+- `[ ]` Add persistent debate storage via a repository adapter
+- `[ ]` Add structured JSON schema validation for Judge output
+- `[ ]` Improve turn tracking and debate-state reporting in LangGraph
