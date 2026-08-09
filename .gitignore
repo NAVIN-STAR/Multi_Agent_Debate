@@ -37,3 +37,5 @@ desktop.ini
 *.rar
 *.zip
 *.tar.gz
+
+tests/
