@@ -1,7 +1,14 @@
+import os
+
 import streamlit as st
 
 from app.ui.streamlit.api_client import DebateAPIClient
 from app.ui.streamlit.components.debate_component import render_debate_event
+
+API_BASE_URL = os.getenv(
+    "API_BASE_URL",
+    "http://localhost:8000",
+)
 
 st.set_page_config(
     page_title="Multi-Agent Debate",
@@ -111,8 +118,8 @@ if start_clicked:
         st.error("Please enter a debate topic.")
     else:
         client = DebateAPIClient(
-            base_url="http://localhost:8000"
-        )
+    base_url=API_BASE_URL,
+)
 
         st.subheader(f"⚔️ {topic}")
 

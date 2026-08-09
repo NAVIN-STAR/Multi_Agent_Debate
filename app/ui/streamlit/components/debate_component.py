@@ -1,12 +1,7 @@
 import time
-from typing import Generator
-import streamlit as st
+from collections.abc import Generator
 
-THINKING_DELAYS = {
-    "optimist": 1.2,
-    "critic": 1.2,
-    "judge": 2.0,
-}
+import streamlit as st
 
 SPEAKER_META = {
     "optimist": {
@@ -73,7 +68,6 @@ def inject_custom_css() -> None:
             gap: 10px;
         }
 
-        /* Target the Streamlit native border container to style it per speaker */
         [data-testid="stVerticalBlockBorderWrapper"] {
             border-radius: 12px !important;
             margin-bottom: 16px !important;
@@ -82,6 +76,14 @@ def inject_custom_css() -> None:
         """,
         unsafe_allow_html=True,
     )
+
+
+def _get_status_registry() -> dict:
+    # Holds the *open* st.status() objects, keyed by speaker,
+    # so we can close them later from a different event/function call.
+    if "active_statuses" not in st.session_state:
+        st.session_state["active_statuses"] = {}
+    return st.session_state["active_statuses"]
 
 
 def render_debate_event(event: dict) -> None:
@@ -101,11 +103,12 @@ def render_debate_event(event: dict) -> None:
 
 def _render_started(speaker: str) -> None:
     meta = SPEAKER_META.get(speaker, {"emoji": "💬", "label": speaker.title()})
-    delay = THINKING_DELAYS.get(speaker, 1.2)
+    registry = _get_status_registry()
 
-    with st.status(f"{meta['emoji']} {meta['label']} is thinking...", expanded=False) as status:
-        time.sleep(delay)
-        status.update(label=f"{meta['emoji']} {meta['label']} completed thinking.", state="complete")
+    # Open the status and LEAVE IT OPEN. Do not sleep, do not complete here.
+    # It will be completed later, right when the response actually arrives.
+    status = st.status(f"{meta['emoji']} {meta['label']} is thinking...", expanded=False)
+    registry[speaker] = status
 
 
 def _stream_text(content: str, delay: float = 0.012) -> Generator[str, None, None]:
@@ -115,12 +118,20 @@ def _stream_text(content: str, delay: float = 0.012) -> Generator[str, None, Non
         time.sleep(delay)
 
 
+def _complete_status(speaker: str, label: str) -> None:
+    registry = _get_status_registry()
+    status = registry.pop(speaker, None)
+    if status is not None:
+        status.update(label=label, state="complete")
+
+
 def _render_response(speaker: str, content: str) -> None:
     meta = SPEAKER_META.get(speaker, {"emoji": "💬", "label": speaker.title()})
 
-    # st.container(border=True) keeps everything enclosed together reliably
+    # Close the "thinking" status only now — the response is actually ready.
+    _complete_status(speaker, f"{meta['emoji']} {meta['label']} completed thinking.")
+
     with st.container(border=True):
-        # Header with separator line
         st.markdown(
             f'<div class="card-header">'
             f'  <div class="speaker-title">{meta["emoji"]} {meta["label"]}</div>'
@@ -128,13 +139,13 @@ def _render_response(speaker: str, content: str) -> None:
             f"</div>",
             unsafe_allow_html=True,
         )
-
-        # Streamed body text directly inside the same container box
         st.write_stream(_stream_text(content))
 
 
 def _render_finished(speaker: str, content: str) -> None:
     meta = SPEAKER_META.get(speaker, {"emoji": "⚖️", "label": "Judge"})
+
+    _complete_status(speaker, f"{meta['emoji']} {meta['label']} completed thinking.")
 
     with st.container(border=True):
         st.markdown(
@@ -144,5 +155,4 @@ def _render_finished(speaker: str, content: str) -> None:
             f"</div>",
             unsafe_allow_html=True,
         )
-
         st.write_stream(_stream_text(content))

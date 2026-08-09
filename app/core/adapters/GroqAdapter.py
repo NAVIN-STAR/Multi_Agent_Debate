@@ -36,6 +36,8 @@ class GroqAdapter(LLMPort):
             response = await self.client.chat.completions.create(
                 model=self.model,
                 messages=[{"role": "user", "content": prompt}],
+                reasoning_format="hidden",  # <--- Suppresses separate reasoning block
+                max_completion_tokens=4096,
             )
             return response.choices[0].message.content or ""
         except Exception as e:  # noqa: BLE001
