@@ -6,6 +6,7 @@ from app.core.domain.agents.judge import Judge
 from app.core.domain.models.models import TurnContext
 
 
+@pytest.mark.live
 @pytest.mark.asyncio
 async def test_judge_take_turn_integration_ollama():
     # 1. Arrange: Use a real adapter
@@ -20,7 +21,7 @@ async def test_judge_take_turn_integration_ollama():
     assert isinstance(response, str)
     assert len(response) > 0
 
-
+@pytest.mark.live
 @pytest.mark.asyncio
 async def test_judge_take_turn_integration_groq():
     # 1. Arrange: Use a real adapter

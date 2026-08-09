@@ -3,6 +3,7 @@ import pytest
 from app.core.adapters.OllamaAdapter import OllamaAdapter
 
 
+@pytest.mark.live
 @pytest.mark.asyncio
 async def test_generate_returns_text():
 

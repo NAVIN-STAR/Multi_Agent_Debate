@@ -6,6 +6,7 @@ from app.core.domain.agents.critic import Critic
 from app.core.domain.models.models import TurnContext
 
 
+@pytest.mark.live
 @pytest.mark.asyncio
 async def test_critic_take_turn_integration_Ollama():
     # 1. Arrange: Use a real adapter
@@ -21,7 +22,7 @@ async def test_critic_take_turn_integration_Ollama():
     assert len(response) > 0
 
 
-
+@pytest.mark.live
 @pytest.mark.asyncio
 async def test_critic_take_turn_integration_Groq():
     # 1. Arrange: Use a real adapter

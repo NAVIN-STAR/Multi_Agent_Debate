@@ -5,6 +5,7 @@ from app.core.domain.agents.optimist import Optimist
 from app.core.domain.models.models import TurnContext
 
 
+@pytest.mark.live
 @pytest.mark.asyncio
 async def test_optimist_take_turn_integration():
     # 1. Arrange: Use a real adapter
