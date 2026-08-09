@@ -77,3 +77,10 @@ jobs:
 
             docker compose ps
           EOF
+      - name: Verify deployment
+        run: |
+            ssh ssh.nabinlabs.in <<'EOF'
+            set -e
+
+            curl --fail http://localhost:8002/docs
+            EOF
