@@ -69,7 +69,7 @@ jobs:
           ssh ssh.nabinlabs.in <<'EOF'
             set -e
 
-            cd ~/multi_agent_debate
+            cd /opt/apps/Multi_Agent_Debate
 
             git pull origin main
 
