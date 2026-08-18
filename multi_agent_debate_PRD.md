@@ -29,7 +29,7 @@ Secondary motivation: complement an existing resume gap around system design / a
 - Multi-user support, auth, or accounts
 - Long-term analytics or querying across many past debates — PostgreSQL is used for transcript persistence (NFR6), but building dashboards/reports over historical debates is not a goal
 - Streaming token-by-token UI
-- Building or testing against more than one concrete LLM adapter (e.g., OpenAI, Anthropic). The `LLMPort` interface makes this structurally possible per hexagonal architecture, but only `OllamaAdapter` will be implemented — no provider-selection logic, fallback, or multi-provider testing
+- Building or testing against many LLM providers as a goal in itself. The `LLMPort` interface makes provider-swapping structurally possible per hexagonal architecture; `OllamaAdapter` (local dev) and `GroqAdapter` (deployment — hosted environments generally can't run local Ollama) are both implemented because deployment requires it, not because multi-provider support was a design goal. No provider-selection/fallback logic between them beyond environment-based configuration.
 - Production concerns: horizontal scaling, queuing, rate limiting, deployment infra
 - High debate "quality" tuning — Phi-4-Mini will sometimes produce mediocre arguments; this is acceptable and expected given the model size
 
@@ -110,6 +110,11 @@ The system will use **Hexagonal Architecture (Ports & Adapters)**: domain logic 
 
 This is a deliberate choice to prioritize architectural learning and interview defensibility over minimal-effort delivery — flagged here so it isn't mistaken for accidental over-engineering.
 
-## 11. Next Step
+## 12. Roadmap (planned, not yet built)
+
+- **API + Groq rate-limit handling**: rate limiting on the FastAPI layer itself, plus graceful backoff when Groq returns 429, with live "retrying in Ns" feedback surfaced to Streamlit via the existing SSE stream. Full design in ADR ("Planned Extension: Groq Rate-Limit Backoff").
+- **MCP research tools**: Optimist and Critic research a claim only when uncertain about it (not open-ended research every turn); Judge uses the same mechanism narrowly, only to verify specific claims already made during the debate, not to conduct independent topic research. Modeled as a genuine Strategy pattern (`NoResearchStrategy` vs. `UncertaintyTriggeredResearchStrategy`). Also serves as a hands-on MCP learning goal. Full design in ADR ("Planned Extension: MCP Research Tools").
+
+## 13. Next Step
 
 Proceed to ADR (Phase 1): lock in the state graph shape, and map each LLD pattern to a specific component with a written rationale.
