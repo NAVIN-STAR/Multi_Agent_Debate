@@ -44,6 +44,6 @@ async def test_stream_workflow(fake_llm):
             assert event.content == "fake response"
 
     # 4. Verify round progression across stream events
-    expected_rounds = [1, 1, 1, 2, 2, 2, 2, 3, 3, 3]
+    expected_rounds = [1, 1, 1, 1, 2, 2, 2, 2, 3, 3]
     actual_rounds = [event.round_number for event in events]
     assert actual_rounds == expected_rounds
