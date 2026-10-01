@@ -3,8 +3,11 @@ from app.core.domain.models.models import DebateState, Speaker, TurnContext
 
 
 class OptimistNode(BaseNode):
-
-    def update_state(self, state: DebateState, updated_context:TurnContext,) -> DebateState:
+    def update_state(
+        self,
+        state: DebateState,
+        updated_context: TurnContext,
+    ) -> DebateState:
         return {
             "turn_context": updated_context,
             "max_rounds": state["max_rounds"],
@@ -13,12 +16,15 @@ class OptimistNode(BaseNode):
         }
 
 
-
 class CriticNode(BaseNode):
-    def update_state(self, state: DebateState, updated_context: TurnContext,) -> DebateState:
-        next_round=updated_context.round_number+1
+    def update_state(
+        self,
+        state: DebateState,
+        updated_context: TurnContext,
+    ) -> DebateState:
+        next_round = updated_context.round_number + 1
 
-        updated_context=TurnContext(
+        updated_context = TurnContext(
             topic=updated_context.topic,
             history=updated_context.history,
             round_number=next_round,
@@ -35,18 +41,14 @@ class CriticNode(BaseNode):
 
 
 class JudgeNode(BaseNode):
-
-    def update_state(self, state: DebateState, updated_context: TurnContext,) -> DebateState:
+    def update_state(
+        self,
+        state: DebateState,
+        updated_context: TurnContext,
+    ) -> DebateState:
         return {
             "turn_context": updated_context,
             "max_rounds": state["max_rounds"],
             "current_speaker": Speaker.JUDGE,
             "verdict": updated_context.history[-1].content,
         }
-    
-
-
-
-        
-        
-    

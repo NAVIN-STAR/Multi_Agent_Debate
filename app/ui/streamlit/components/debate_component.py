@@ -92,13 +92,19 @@ def render_debate_event(event: dict) -> None:
     event_type = event["event_type"]
     speaker = event["speaker"]
     content = event.get("content", "")
-
+    round_number = event.get("round_number", 1)
+    last_round = st.session_state.get("current_rendered_round", 0)
+    if speaker != "judge" and round_number > last_round:
+        st.session_state["current_rendered_round"] = round_number
+        st.markdown(f"### 🥊 Round {round_number}")
     if event_type == "started":
         _render_started(speaker)
     elif event_type == "response":
-        _render_response(speaker, content)
+        _render_response(speaker, content, round_number)
     elif event_type == "finished":
         _render_finished(speaker, content)
+    elif event_type == "error":
+        _render_error(speaker, content)
 
 
 def _render_started(speaker: str) -> None:
@@ -107,7 +113,9 @@ def _render_started(speaker: str) -> None:
 
     # Open the status and LEAVE IT OPEN. Do not sleep, do not complete here.
     # It will be completed later, right when the response actually arrives.
-    status = st.status(f"{meta['emoji']} {meta['label']} is thinking...", expanded=False)
+    status = st.status(
+        f"{meta['emoji']} {meta['label']} is thinking...", expanded=False
+    )
     registry[speaker] = status
 
 
@@ -125,7 +133,7 @@ def _complete_status(speaker: str, label: str) -> None:
         status.update(label=label, state="complete")
 
 
-def _render_response(speaker: str, content: str) -> None:
+def _render_response(speaker: str, content: str, round_number: int) -> None:
     meta = SPEAKER_META.get(speaker, {"emoji": "💬", "label": speaker.title()})
 
     # Close the "thinking" status only now — the response is actually ready.
@@ -135,7 +143,10 @@ def _render_response(speaker: str, content: str) -> None:
         st.markdown(
             f'<div class="card-header">'
             f'  <div class="speaker-title">{meta["emoji"]} {meta["label"]}</div>'
-            f'  <span class="speaker-pill">{speaker.upper()}</span>'
+            f"  <div>"
+            f'    <span class="speaker-pill">ROUND {round_number}</span>'
+            f'    <span class="speaker-pill">{speaker.upper()}</span>'
+            f"  </div>"
             f"</div>",
             unsafe_allow_html=True,
         )
@@ -156,3 +167,16 @@ def _render_finished(speaker: str, content: str) -> None:
             unsafe_allow_html=True,
         )
         st.write_stream(_stream_text(content))
+
+
+def _render_error(speaker: str, content: str) -> None:
+    meta = SPEAKER_META.get(speaker, {"emoji": "💬", "label": speaker.title()})
+
+    # Close/fail the thinking spinner
+    registry = _get_status_registry()
+    status = registry.pop(speaker, None)
+    if status is not None:
+        status.update(label=f"❌ {meta['label']} failed to respond", state="error")
+
+    # Render a clean, distinct error box
+    st.error(f"⚠️ **{meta['label']} Error:** {content}", icon="🚨")

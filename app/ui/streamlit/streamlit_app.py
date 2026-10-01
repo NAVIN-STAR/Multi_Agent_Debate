@@ -85,7 +85,9 @@ CUSTOM_CSS = """
 """
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
-st.markdown('<h1 class="debate-header">⚔️ Multi-Agent Debate</h1>', unsafe_allow_html=True)
+st.markdown(
+    '<h1 class="debate-header">⚔️ Multi-Agent Debate</h1>', unsafe_allow_html=True
+)
 st.markdown(
     '<p class="debate-subtitle">Optimist vs. Critic, judged by AI</p>',
     unsafe_allow_html=True,
@@ -102,7 +104,7 @@ with st.sidebar:
     max_rounds = st.slider(
         "Number of rounds",
         min_value=1,
-        max_value=10,
+        max_value=7,
         value=2,
         step=1,
     )
@@ -117,9 +119,10 @@ if start_clicked:
     if not topic.strip():
         st.error("Please enter a debate topic.")
     else:
+        st.session_state["current_rendered_round"] = 0
         client = DebateAPIClient(
-    base_url=API_BASE_URL,
-)
+            base_url=API_BASE_URL,
+        )
 
         st.subheader(f"⚔️ {topic}")
 

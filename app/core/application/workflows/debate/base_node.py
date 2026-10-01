@@ -22,7 +22,11 @@ class BaseNode(ABC):
         turn_context = state["turn_context"]
         response = await self.agent.take_turn(turn_context=turn_context)
 
-        message = DebateMessage(speaker=self.agent.name, content=response)
+        message = DebateMessage(
+            speaker=self.agent.name,
+            content=response,
+            round_number=turn_context.round_number,
+        )
         updated_context = TurnContext(
             topic=turn_context.topic,
             history=[*turn_context.history, message],

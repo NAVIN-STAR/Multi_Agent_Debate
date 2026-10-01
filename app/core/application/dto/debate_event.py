@@ -5,9 +5,10 @@ from app.core.domain.models.models import Speaker
 
 
 class DebateEventType(Enum):
-    STARTED="started"
+    STARTED = "started"
     RESPONSE = "response"
     FINISHED = "finished"
+    ERROR = "error"
 
 
 @dataclass
@@ -15,4 +16,4 @@ class DebateEvent:
     round_number: int
     speaker: Speaker
     content: str
-    event_type:DebateEventType
+    event_type: DebateEventType

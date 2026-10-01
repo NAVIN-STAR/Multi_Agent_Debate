@@ -1,11 +1,38 @@
 import os
 
 from dotenv import load_dotenv
-from groq import AsyncGroq
+from groq import APIStatusError, AsyncGroq
 
+from app.core.domain.errors.errors import (
+    LLMAuthenticationError,
+    LLMError,
+    LLMRateLimitError,
+    LLMServiceUnavailableError,
+)
 from app.core.domain.ports.llm_port import LLMPort
 
 load_dotenv()
+
+
+def _parse_retry_after(e: APIStatusError) -> float | None:
+    try:
+        header = e.response.headers.get("retry-after")
+        return float(header) if header else None
+    except Exception:
+        return None
+
+
+ERROR_MAP = {
+    401: lambda e: LLMAuthenticationError(
+        message=getattr(e, "message", str(e)), provider="Groq"
+    ),
+    429: lambda e: LLMRateLimitError(
+        provider="Groq", retry_after_seconds=_parse_retry_after(e)
+    ),
+    503: lambda e: LLMServiceUnavailableError(
+        message=getattr(e, "message", str(e)), provider="Groq"
+    ),
+}
 
 
 class GroqAdapter(LLMPort):
@@ -19,11 +46,13 @@ class GroqAdapter(LLMPort):
     ) -> None:
         # Falls back to .env values if parameters aren't explicitly passed
         self.api_key = api_key or os.getenv("GROQ_API_KEY")
-        self.model = model or os.getenv("GROQ_MODEL",'qwen/qwen3.8-27b')
+        self.model = model or os.getenv("GROQ_MODEL", "qwen/qwen3.8-27b")
         self.base_url = base_url or os.getenv("GROQ_BASE_URL")
 
         if not self.api_key:
-            raise ValueError("Groq API key must be provided or set in environment variables.")
+            raise ValueError(
+                "Groq API key must be provided or set in environment variables."
+            )
 
         # Initialize the official AsyncGroq client
         self.client = AsyncGroq(
@@ -40,5 +69,16 @@ class GroqAdapter(LLMPort):
                 max_completion_tokens=4096,
             )
             return response.choices[0].message.content or ""
+        except APIStatusError as e:  # noqa: BLE001
+            clean_message = getattr(e, "message", str(e))
+            error_factory = ERROR_MAP.get(e.status_code)
+            if error_factory:
+                raise error_factory(e)
+            raise LLMError(message=clean_message, provider="Groq", is_transient=False)
+
         except Exception as e:  # noqa: BLE001
-            raise RuntimeError(f"Failed to generate text from Groq: {e}")
+            raise LLMError(
+                message=f"Network or connection failure: {e}",
+                provider="Groq",
+                is_transient=True,
+            )

@@ -1,3 +1,5 @@
+from app.core.application.mappers.debate_mappers import to_error_event
+from app.core.domain.errors.errors import LLMError
 from typing import cast
 
 from langgraph.graph.state import CompiledStateGraph
@@ -27,15 +29,12 @@ from app.core.domain.ports.llm_port import LLMPort
 
 
 class DebateWorkflow:
-
-
     """Coordinates the execution of a multi-agent debate workflow.
 
-        The workflow creates the debate agents, wires them into the graph,
-        runs the debate, and returns or streams the resulting events.
-        """
+    The workflow creates the debate agents, wires them into the graph,
+    runs the debate, and returns or streams the resulting events.
+    """
 
-    
     def __init__(self, llm: LLMPort, max_rounds: int = 2) -> None:
         self.llm = llm
 
@@ -74,11 +73,10 @@ class DebateWorkflow:
             "verdict": None,
         }
 
-
     def _prepare_execution(
-    self,
-    request: DebateRequest,
-) -> tuple[CompiledStateGraph, DebateState]:
+        self,
+        request: DebateRequest,
+    ) -> tuple[CompiledStateGraph, DebateState]:
         initial_state = self._create_initial_state(request)
 
         optimist, critic, judge = self._create_agents()
@@ -97,8 +95,6 @@ class DebateWorkflow:
 
         return graph, initial_state
 
-
-
     async def run(self, request: DebateRequest):
         graph, initial_state = self._prepare_execution(request)
 
@@ -113,29 +109,36 @@ class DebateWorkflow:
 
         # 1. Optimist is about to think
         yield to_started_event(initial_state)
+        current_state = initial_state
         # 2. Stream graph execution
-        first=True
-        async for state in graph.astream(
+        first = True
+        try:
+            async for state in graph.astream(
                 initial_state,
-            stream_mode="values",
-        ):
-            state = cast(DebateState, state)
+                stream_mode="values",
+            ):
+                state = cast(DebateState, state)
+                current_state = state  # Skip first yield as it yields initial state with empty history
+                if first:
+                    first = False
+                    continue
 
-            #Skip first yield as it yields initial state with empty history
-            if first:
-                first = False
-                continue
-
-            # 3. Completed node
-            if state["verdict"] is None:
-                yield to_event(
-                    state=state,
-                    event_type=DebateEventType.RESPONSE,
-                )
-                yield to_started_event(state)
-            else:
-                yield to_event(
-                    state,
-                    DebateEventType.FINISHED,
-                )
-                break
+                # 3. Completed node
+                if state["verdict"] is None:
+                    yield to_event(
+                        state=state,
+                        event_type=DebateEventType.RESPONSE,
+                    )
+                    yield to_started_event(state)
+                else:
+                    yield to_event(
+                        state,
+                        DebateEventType.FINISHED,
+                    )
+                    break
+        except LLMError as e:
+            yield to_error_event(
+                speaker=current_state["current_speaker"],
+                round_number=current_state["turn_context"].round_number,
+                error_message=e.message,
+            )
